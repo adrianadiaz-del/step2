@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Filter Installation</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+    background: transparent;
+    color: #222;
+  }
+
+  /* ---- PROGRESS BAR ---- */
+  #progress-bar-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  #progress-track {
+    flex: 1;
+    height: 6px;
+    background: #eee;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  #progress-fill {
+    height: 100%;
+    background: #246EFF;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  #progress-counter {
+    font-size: 13px;
+    font-weight: 600;
+    color: #246EFF;
+    white-space: nowrap;
+  }
+
+  /* ---- STEPS ---- */
+  #steps-container {
+    padding: 0;
+  }
+
+  .step {
+    padding: .75rem;
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .step.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .step.completed {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .step-divider {
+    height: 2px;
+    background: #eee;
+    margin: 0;
+    border: none;
+  }
+
+  .step-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 .75rem 0;
+    line-height: 1.3;
+  }
+
+  .step-subtitle {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 1rem;
+  }
+
+  /* ---- TWO COLUMN LAYOUT ---- */
+  .step-body {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .step-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .step-right {
+    flex: 0 0 250px;
+    width: 250px;
+  }
+
+  .step-right img {
+    width: 100%;
+    max-width: 250px;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 8px;
+    display: block;
+  }
+
+  /* ---- CHECKLIST ---- */
+  .checklist {
+    list-style: none;
+    margin: 0 0 16px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .checklist li {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .checklist-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  input[type="checkbox"] {
+    display: none;
+  }
+
+  .cb-box {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #246EFF;
+    border-radius: 5px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    margin-top: 2px;
+  }
+
+  .cb-box svg {
+    display: none;
+    width: 14px;
+    height: 14px;
+  }
+
+  input[type="checkbox"]:checked + .checklist-row .cb-box {
+    background: #28A745;
+    border-color: #28A745;
+  }
+
+  input[type="checkbox"]:checked + .checklist-row .cb-box svg {
+    display: block;
+  }
+
+  .cb-label {
+    font-size: 18px;
+    color: #222;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Strikethrough when checked */
+  li.chk .cb-label { color: #999; text-decoration: line-through; }
+  li.chk span { color: #999; text-decoration: line-through; }
+  /* Keep cb-box visuals unaffected */
+  li.chk .cb-box,
+  li.chk .cb-box svg path { text-decoration: none; }
+  li.chk .pill-optional { text-decoration: none; color: #246EFF; }
+
+  .cb-subline {
+    font-size: 16px;
+    color: #246EFF;
+    font-weight: 600;
+    display: block;
+    margin-top: 2px;
+    padding-left: 34px;
+  }
+
+  /* Optional pill */
+  .pill-optional {
+    display: inline-block;
+    background: #E8F0FF;
+    color: #246EFF;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 5px;
+    padding: 2px 8px;
+    vertical-align: middle;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* ---- TIP BOXES ---- */
+  .tip-box {
+    border-radius: 0 6px 6px 0;
+    padding: 10px 13px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .tip-box.green {
+    background: #f5f5f3;
+    border-left: 3px solid #28A745;
+  }
+
+  .tip-box.blue {
+    background: #EBF3FC;
+    border-left: 3px solid #246EFF;
+  }
+
+  .tip-box.blue a {
+    color: #246EFF;
+    font-weight: 600;
+  }
+
+  /* ---- NEXT BUTTON ---- */
+  .step-nav {
+    margin-top: 20px;
+  }
+
+  .btn-next {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 24px;
+    cursor: not-allowed;
+    border: none;
+    background: #ccc;
+    color: #fff;
+    transition: background 0.2s;
+    display: inline-block;
+  }
+
+  .btn-next.ready {
+    background: #246EFF;
+    cursor: pointer;
+  }
+
+  .btn-next.ready:hover {
+    background: #1555d4;
+  }
+
+  /* ---- COMPLETION ---- */
+  #completion {
+    display: none;
+    padding: 40px .75rem;
+    text-align: center;
+  }
+
+  #completion h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #28A745;
+    margin: 0 0 8px;
+  }
+
+  #completion p {
+    font-size: 16px;
+    color: #555;
+    margin: 0;
+  }
+
+  /* ---- MOBILE ---- */
+  @media (max-width: 500px) {
+    .step-body {
+      flex-direction: column;
+    }
+
+    .step-right {
+      flex: none;
+      width: 100%;
+      order: 2;
+    }
+
+    .step-right img {
+      max-width: 100%;
+      max-height: 220px;
+    }
+
+    .step-left {
+      order: 1;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div id="progress-bar-wrap">
+  <div id="progress-track">
+    <div id="progress-fill" style="width:0%"></div>
+  </div>
+  <div id="progress-counter">1 / 1</div>
+</div>
+
+<!-- STEPS -->
+<div id="steps-container">
+
+  <!-- STEP 1 -->
+  <div class="step active" data-step="1" id="step-1">
+    <h2 class="step-title">Install the water filter</h2>
+    <div class="step-body">
+      <div class="step-left">
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="s1c1">
+            <label for="s1c1" class="checklist-row">
+              <span class="cb-box">
+                <svg viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.5 5.5L5.5 9.5L12.5 1.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="cb-label">Locate the filter you brought to the location and remove it from its packaging</span>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="s1c2">
+            <label for="s1c2" class="checklist-row">
+              <span class="cb-box">
+                <svg viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.5 5.5L5.5 9.5L12.5 1.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="cb-label">Remove the red cap and locate the filter housing bracket</span>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="s1c3">
+            <label for="s1c3" class="checklist-row">
+              <span class="cb-box">
+                <svg viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.5 5.5L5.5 9.5L12.5 1.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="cb-label">Insert the filter by rotating it until it locks into place</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="step-right">
+        <img src="https://adrianadiaz-del.github.io/step2/Untitled%20-%20June%2001%2C%202026%20at%2017.05.34.gif" alt="Water filter installation">
+      </div>
+    </div>
+    <!-- No button on the last (and only) step -->
+  </div>
+
+</div>
+
+<script>
+  const TOTAL = 1;
+  const allBoxes = document.querySelectorAll('input[type="checkbox"]');
+
+  function updateProgress() {
+    var checked = Array.from(allBoxes).filter(function(c) { return c.checked; }).length;
+    var pct = allBoxes.length > 0 ? (checked / allBoxes.length) * 100 : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // Wire up checkboxes: toggle chk class on li + update button state
+  allBoxes.forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      var li = cb.closest('li');
+      if (li) li.classList.toggle('chk', cb.checked);
+      updateStepButton(cb.closest('.step'));
+      updateProgress();
+    });
+  });
+
+  function updateStepButton(stepEl) {
+    if (!stepEl) return;
+    var btn = stepEl.querySelector('.btn-next');
+    if (!btn) return;
+    var boxes = stepEl.querySelectorAll('input[type="checkbox"]');
+    var allChecked = Array.from(boxes).every(function(c) { return c.checked; });
+    btn.classList.toggle('ready', allChecked);
+  }
+
+  function goTo(n) {
+    var prev = document.querySelector('.step.active');
+    if (prev) prev.classList.replace('active', 'completed');
+
+    var next = document.getElementById('step-' + n);
+    if (next) {
+      next.classList.add('active');
+      document.getElementById('progress-counter').textContent = n + ' / ' + TOTAL;
+      next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+</script>
+</body>
+</html>
